@@ -337,7 +337,7 @@ def getInstagramInfos(username):
 def banner():
     print("""
 Author : Dalunacrobate
-Url :     
+Url : https://github.com/dalunacrobate/BioIG
 """)
 
 def clear():
@@ -376,7 +376,7 @@ def main():
             for i in data['city_list']:
                 print("-", i)
         if data['lgbt_points'] is not None:
-            print("[+] Probably LGBT\n")
+            print("[+] Probably LGBT")
         if data['fb_list'] is not None:
             print("[+] Facebook accounts :\n======================")
             for i in data['fb_list']:
@@ -405,6 +405,7 @@ def main():
             print('[+] Love Situation :\n===================')
             for i in data['love_situation']:
                 print("-", i)
+        sys.exit('\n')
     else:
         sys.exit("[!] Invalid params\nExemple : bioig username")
 main()
