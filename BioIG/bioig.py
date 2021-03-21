@@ -1,5 +1,13 @@
-import requests, bs4, sys
+import requests, bs4, sys, os
 from bs4   import BeautifulSoup
+
+def cleartext(text):
+    spec_chars = list(',?;:!§/\|<>*$£¤^¨^')
+    for i in range(8):
+        for i in spec_chars:
+            if i in text:
+                text = text.replace(i,'')
+    return text
 
 def get_info_from_bio(bio):
     lines = bio.split('\n')
@@ -138,6 +146,7 @@ def get_info_from_bio(bio):
     astro_sign      = []
     hobbies_emojis  = []
     love_situation  = []
+    tiktok_list     = []
 
     for line in lines:
         line = line.replace('</a','').replace('<a href="/v','').replace('<a href="/t/','')
@@ -162,6 +171,11 @@ def get_info_from_bio(bio):
         for chars in line:
             if chars == "/":
                 temp_list_love.append('.')
+        if "tik tok" in line or "tiktok" in line:
+            if ":" in line:
+                tiktok_list.append(cleartext(line.split(':')[1]))
+            else:
+                tiktok_list.append(cleartext(line.replace('tik tok','').replace('tiktok','')))
         if "en couple" in line or "🔒" in line or "🔐" in line:
             love_situation.append('Not Free | Taken')
         if "celib" in line:
@@ -171,28 +185,28 @@ def get_info_from_bio(bio):
         if "facebook" in line:
             if ":" in line:
                 line = line.split(':')[1]
-            fb_list.append(line)
+            fb_list.append(cleartext(line))
         if "twitter" in line:
             if ":" in line:
                 line = line.split(':')[1]
-            twitter_list.append(line)
+            twitter_list.append(cleartext(line))
         if len(temp_list_love) == 2:
             love_date_since.append(line)
         if "📍" in line or "📌" in line:
-            city_list.append(line.replace('📍','').replace('📌','').replace(':',''))
+            city_list.append(cleartext(line.replace('📍','').replace('📌','').replace(':','')))
         if "snapchat" in line or "snap" in line or "👻" in line or "sc : " in line or "sc:" in line:
             line = line.replace('👻','').strip()
             if ":" in line:
                 line = line.split(':')[1].strip()
-            snapchat_final.append(line)
+            snapchat_final.append(cleartext(line))
         if "📚" in line or "🎓" in line:
-            school_list.append(line.replace('📚','').replace('🎓','').strip())
+            school_list.append(cleartext(line.replace('📚','').replace('🎓','').strip()))
         if "yo" in line or "years old" in line or "years" in line or "🎂" in line or "anniv" in line:
             if "🎂" in line:
                 line = line.replace('🎂','')
                 if ":" in line:
                     line = line.split(':')[1]
-                ages.append(line)
+                ages.append(cleartext(line))
             else:
                 try:
                     if "years" in line:
@@ -203,7 +217,7 @@ def get_info_from_bio(bio):
                         age = int(line.split("y")[0].replace('y','').strip())
                     else:
                         age = int(line.split("years")[0].strip())
-                    ages.append(str(age))
+                    ages.append(cleartext(str(age)))
                 except ValueError:
                     ages.append('Verify by yourself')
         if "paypal.me/" in line:
@@ -229,6 +243,10 @@ def get_info_from_bio(bio):
                                     line = line.split(':')[1].strip()
                                 emails_final.append(line)
     
+        if len(tiktok_list) == 0:
+            bio_infos['tiktok_list'] = None
+        else:
+            bio_infos['tiktok_list'] = tiktok_list
         if len(love_situation) == 0:
             bio_infos['love_situation'] = None
         else:
@@ -322,8 +340,15 @@ Author : Dalunacrobate
 Url :     
 """)
 
+def clear():
+    if sys.platform == "win32":
+        os.system('cls')
+    else:
+        os.system('clear')
+
 def main():
     if len(sys.argv)>1:
+        clear()
         banner()
         data = getInstagramInfos(sys.argv[1])
         if data['paypal'] is not None:
@@ -339,7 +364,7 @@ def main():
             for i in data['best_friend']:
                 print("-", i)
         if data['snapchat'] is not None:
-            print("[+] Snapchat :\n=============\n{}".format(data['snapchat']))
+            print("[+] Snapchat :\n=============\n- {}".format(data['snapchat']))
         if data['school'] is not None:
             print("[+] School :\n===========\n- {}".format(data['school']))
         if data['twitter_list'] is not None:
@@ -372,9 +397,14 @@ def main():
             print("[+] Religions :\n==============")
             for i in data['religions']:
                 print("-", i)
+        if data['tiktok_list'] is not None:
+            print("[+] Tiktok :\n===========")
+            for i in data['tiktok_list']:
+                print("-", i)
         if data['love_situation'] is not None:
             print('[+] Love Situation :\n===================')
             for i in data['love_situation']:
                 print("-", i)
     else:
-        sys.exit("[!] Invalid param\nExemple : bioig username")
+        sys.exit("[!] Invalid params\nExemple : bioig username")
+main()
